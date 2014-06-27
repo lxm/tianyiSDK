@@ -83,7 +83,7 @@ class tianyiSDK{
 		$paramdata = json_encode($data);
 		$postdata = 'acceptor_tel='.$to.'&template_id='.$tempId.
 					'&template_param='.$paramdata.
-					'&app_id='.$this->AppId.'&access_token='.$this->getAT().
+					'&app_id='.$this->AppId.'&access_token='.$this->AccessToken.
 					'&timestamp='.$this->Batch;
 		$result = $this->curl_post($url,$postdata);
 		$raw = json_decode($result);
