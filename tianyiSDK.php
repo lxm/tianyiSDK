@@ -5,12 +5,20 @@ class tianyiSDK{
 	private $Batch;
 	private $AuthCode;
 	private $AccessToken;
+	
 	public function __construct($aid,$sid){
 		$this->AppId = $aid;
 		$this->AppSecret = $sid;
 		$this->Batch = date('Y-m-d H:i:s');
-		echo $this->AccessToken = $this->getAT();
+		$this->AccessToken = $this->getAT();
 	}
+	
+	/****************************************
+	fun:curl post方法
+	author:LXM
+	email:lxm.xupt@gmail.com
+	****************************************/
+	
 	public function curl_post($url,$postdata){
 		$ch = curl_init($url);
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -24,6 +32,13 @@ class tianyiSDK{
 		return $result;	
 		curl_close($ch);
 	}
+	
+	/****************************************
+	fun:curl get方法
+	author:LXM
+	email:lxm.xupt@gmail.com
+	****************************************/
+	
 	public function curl_get($url){
 		$ch = curl_init($url);
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -35,9 +50,15 @@ class tianyiSDK{
 		return $result;	
 		curl_close($ch);
 	}
+
+	/****************************************
+	fun:sign签名方法,返回签名后的参数
+	author:LXM
+	email:lxm.xupt@gmail.com
+	****************************************/
+	
 	public function getSign($param){
 		$param_values = explode("&",$param);
-		print_r($param_values);
 		$param_keys = array();
 		foreach($param_values as $val){
 			$t = explode("=",$val);
@@ -51,18 +72,31 @@ class tianyiSDK{
 		$signed_param = join("&",$param_array);
 		return $signed_param;
 	}
+	
+	/****************************************
+	fun:获取access_token
+	author:LXM
+	email:lxm.xupt@gmail.com
+	****************************************/
+
 	public function getAT(){
 		$url = 'https://oauth.api.189.cn/emp/oauth2/v3/access_token';
 		$postdata = 'grant_type=client_credentials&app_id='.$this->AppId.'&app_secret='.$this->AppSecret;
 		$result = $this->curl_post($url,$postdata);
 		$raw = json_decode($result);
-		//print_r($raw);
 		if ($raw->res_code == "0") {
 			return $raw->access_token;
 		}elseif ($raw->res_code == "10000") {
 			return $raw->res_message;
 		}
 	}
+
+	/****************************************
+	fun:获取token
+	author:LXM
+	email:lxm.xupt@gmail.com
+	****************************************/
+	
 	public function getToken(){
 		$url = "http://api.189.cn/v2/dm/randcode/token?";
 		$params = "app_id=".$this->AppId;
@@ -78,6 +112,13 @@ class tianyiSDK{
 			return $raw->res_message;
 		}
 	}
+	
+	/****************************************
+	fun:发送模板短信
+	author:LXM
+	email:lxm.xupt@gmail.com
+	****************************************/
+	
 	public function SendTemplateSMS($to,$data,$tempId){
 		$url = "http://api.189.cn/v2/emp/templateSms/sendSms";
 		$paramdata = json_encode($data);
@@ -88,7 +129,32 @@ class tianyiSDK{
 		$result = $this->curl_post($url,$postdata);
 		$raw = json_decode($result);
 		if($raw->res_code == '0'){
-			return $raw->idertifier;
+			return $raw->idertifier;			//天翼官方把这个单词拼错了........
+		}
+		else{
+			return $raw->res_message;
+		}
+	}
+	
+	/****************************************
+	fun:发送短信验证码
+	author:LXM
+	email:lxm.xupt@gmail.com
+	****************************************/
+	
+	public function SendCaptchaSMS($to){
+		$url = "http://api.189.cn/v2/dm/randcode/sendSms";
+		$randcode = rand(0,9).rand(0,9).rand(0,9).rand(0,9).rand(0,9).rand(0,9);
+		$postdata = 'phone='.$to.
+					'&token='.$this->getToken().
+					'&randcode='.$randcode.
+					'&app_id='.$this->AppId.'&access_token='.$this->AccessToken.'1'.
+					'&timestamp='.$this->Batch;
+		$postdata = $this->getSign($postdata);
+		$result = $this->curl_post($url,$postdata);
+		$raw = json_decode($result);
+		if($raw->res_code == '0'){
+			return $rand_code;
 		}
 		else{
 			return $raw->res_message;
