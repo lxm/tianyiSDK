@@ -29,8 +29,8 @@ class tianyiSDK{
         curl_setopt($ch, CURLOPT_HEADER,0);  // DO NOT RETURN HTTP HEADERS
         curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);  // RETURN THE CONTENTS OF THE CALL
         $result = curl_exec($ch);		
-		return $result;	
 		curl_close($ch);
+		return $result;	
 	}
 	
 	/****************************************
